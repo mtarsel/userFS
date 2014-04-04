@@ -25,8 +25,8 @@ obj/%.o: src/%.c
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf obj
-	rm -rf dep
+	rm -rf ./obj
+	rm -rf ./dep
 	rm -f $(TARGET)
 
 -include $(DEPS)
