@@ -16,7 +16,7 @@ SRCS := $(addprefix src/,$(SRCS))
 all: $(TARGET)
 
 $(TARGET): $(OBJS) fs.c
-	$(CC) $(LIB) $(OBJS) $(LDFLAGS) fs.c -o $(TARGET)
+	$(CC) $(LIB) $(OBJS) fs.c $(LDFLAGS) -o $(TARGET)
 
 obj/%.o: src/%.c
 	@ mkdir -p $(@D)

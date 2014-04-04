@@ -47,9 +47,9 @@ int u_format(int diskSizeBytes, char* file_name)
 	/*************************  BIT MAP **************************/
 
 	assert(sizeof(BIT_FIELD)* BIT_MAP_SIZE <= BLOCK_SIZE_BYTES);
-	fprintf(stderr, "%d blocks %d bytes reserved for bitmap (%d bytes required)\n", 
+	fprintf(stderr, "%d blocks %d bytes reserved for bitmap (%lu bytes required)\n", 
 		1, BLOCK_SIZE_BYTES, sizeof(BIT_FIELD)* BIT_MAP_SIZE );
-	fprintf(stderr, "\tImplies Max size of disk is %d blocks or %d bytes\n",
+	fprintf(stderr, "\tImplies Max size of disk is %lu blocks or %lu bytes\n",
 		BIT_MAP_SIZE*BITS_PER_FIELD, BIT_MAP_SIZE*BLOCK_SIZE_BYTES*BITS_PER_FIELD);
   
 	if (diskSizeBytes >= BIT_MAP_SIZE* BLOCK_SIZE_BYTES){
@@ -75,7 +75,7 @@ int u_format(int diskSizeBytes, char* file_name)
 	/***********************  DIRECTORY  ***********************/
 	assert(sizeof(dir_struct) <= BLOCK_SIZE_BYTES);
 
-	fprintf(stderr, "%d blocks %d bytes reserved for the userfs directory (%d bytes required)\n", 
+	fprintf(stderr, "%d blocks %d bytes reserved for the userfs directory (%lu bytes required)\n", 
 		1, BLOCK_SIZE_BYTES, sizeof(dir_struct));
 	fprintf(stderr, "\tMax files per directory: %d\n",
 		MAX_FILES_PER_DIRECTORY);
@@ -86,7 +86,7 @@ int u_format(int diskSizeBytes, char* file_name)
 	write_dir();
 
 	/***********************  INODES ***********************/
-	fprintf(stderr, "userfs will contain %d inodes (directory limited to %d)\n",
+	fprintf(stderr, "userfs will contain %lu inodes (directory limited to %d)\n",
 		MAX_INODES, MAX_FILES_PER_DIRECTORY);
 	fprintf(stderr,"Inodes limit filesize to %d blocks or %d bytes\n",
 		MAX_BLOCKS_PER_FILE, 
@@ -99,12 +99,12 @@ int u_format(int diskSizeBytes, char* file_name)
 
 	/***********************  SUPERBLOCK ***********************/
 	assert(sizeof(superblock) <= BLOCK_SIZE_BYTES);
-	fprintf(stderr, "%d blocks %d bytes reserved for superblock (%d bytes required)\n", 
+	fprintf(stderr, "%d blocks %d bytes reserved for superblock (%lu bytes required)\n", 
 		1, BLOCK_SIZE_BYTES, sizeof(superblock));
 	init_superblock(diskSizeBytes);
 	fprintf(stderr, "userfs will contain %d total blocks: %d free for data\n",
 		sb.disk_size_blocks, sb.num_free_blocks);
-	fprintf(stderr, "userfs contains %d free inodes\n", MAX_INODES);
+	fprintf(stderr, "userfs contains %lu free inodes\n", MAX_INODES);
 	
 	write_block(SUPERBLOCK_BLOCK, &sb, sizeof(superblock));
 	sync();
