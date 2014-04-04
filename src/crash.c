@@ -33,7 +33,7 @@ int crash_write(int vdisk, const void * buf, int num_bytes)
 
 void * crash_return(void * args) {
 	long crash_sleep = (long)args;
-	fprintf(stderr, "crash sleeping for %d\n", 
+	fprintf(stderr, "crash sleeping for %lu\n", 
 		crash_sleep * CRASHES_IN_100);
 
 	sleep(crash_sleep * CRASHES_IN_100);

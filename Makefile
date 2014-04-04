@@ -2,7 +2,8 @@
 SHELL   = /bin/bash
 TARGET  = fuserfs
 CC      = gcc
-CFLAGS  = -c
+CFLAGS  = -c 
+LIB = -pthread -oterm
 LDFLAGS = -lm `pkg-config fuse --libs --cflags`
 
 SRCS := bitmap.c  blocks.c  crash.c  dir.c  file.c  inode.c  sb.c util.c
@@ -15,7 +16,7 @@ SRCS := $(addprefix src/,$(SRCS))
 all: $(TARGET)
 
 $(TARGET): $(OBJS) fs.c
-	$(CC) $(OBJS)  $(LDFLAGS) fs.c -o $(TARGET)
+	$(CC) $(LIB) $(OBJS) $(LDFLAGS) fs.c -o $(TARGET)
 
 obj/%.o: src/%.c
 	@ mkdir -p $(@D)
