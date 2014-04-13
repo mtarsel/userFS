@@ -45,10 +45,11 @@ int read_inode(int inode_number, inode * in) {
 	return 1;
 }
 
-/* TODO
-   Sets an inode as allocated
-*/
 void allocate_inode(inode * in, int blocks, int size) {
+
+    in -> no_blocks = blocks;
+    in -> file_size_bytes = size;
+    in -> free = false;
 }
 
 int free_inode() {
