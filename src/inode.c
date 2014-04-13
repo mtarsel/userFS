@@ -51,10 +51,19 @@ int read_inode(int inode_number, inode * in) {
 void allocate_inode(inode * in, int blocks, int size) {
 }
 
-/* TODO
-   Returns the next free inode.
-*/
 int free_inode() {
-	return -1;
+
+    int i = 0;
+    inode in;
+    int inode_val = -1;
+
+    for (i=0; i<MAX_INODES && inode_val==-1; ++i){
+	read_inode(i, &in);
+	if(in.free){
+	    inode_val = i;
+	}
+    }
+
+    return inode_val;
 }
 
