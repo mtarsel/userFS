@@ -41,19 +41,26 @@ man errno.h
 */
 static int fs_getattr(const char *path, struct stat *stbuf)
 {
-	int res = 0;
-	
-	memset(stbuf, 0, sizeof(struct stat));
-	if (strcmp(path, "/") == 0) {
-		stbuf->st_mode = S_IFDIR | 0755;
-		stbuf->st_nlink = 2;
-		stbuf->st_mtime = time(NULL);
-		stbuf->st_ctime = time(NULL);
-	} else {
-		res = -ENOENT;
-	}
-	
-	return res;
+    int res = 0;
+    file_struct someFile;		
+    memset(stbuf, 0, sizeof(struct stat));
+    
+    if (strcmp(path, "/") == 0) {
+	stbuf->st_mode = S_IFDIR | 0755;
+	stbuf->st_nlink = 2;
+	stbuf->st_mtime = time(NULL);
+	stbuf->st_ctime = time(NULL);
+    }else if(find_file(path, &someFile)){
+	inode in;
+	read_inode(someFile.inode_number, &in);
+	stbuf->st_mode = S_IFDIR | 0755;
+	stbuf->st_nlink = 2;
+	stbuf->st_mtime = time(NULL);
+	stbuf->st_ctime = time(NULL);
+    }else {
+	res = -ENOENT;
+    }	
+    return res;
 }
 
 /* Reads all of the files in path into buf using the filler function
