@@ -30,7 +30,7 @@ void dir_allocate_file(int inode, const char * name) {
 	    root_dir.u_file[i].free = false;
 	    strcpy(root_dir.u_file[i].file_name, name);
 	    break;
-	}//TODO: add to root_dir the number of files
+	}// add to root_dir the number of files???
     }
 }
 
@@ -43,22 +43,61 @@ bool is_dir_full() {
     }
 }
 
-/* TODO
+/*
    Finds the file specified by name
    sets the file parameter to the file that was found
 */
 bool find_file(const char * name, file_struct * file) {
-	return false;
+    
+    int i;
+
+    for(i=0;i<MAX_FILES_PER_DIRECTORY; ++i){
+	if(!root_dir.u_file[i].free){
+	    if(!strcmp(root_dir.u_file[i].file_name, name)){
+		*file = root_dir.u_file[i];
+		return true;
+	    }
+
+	}	
+    }
+    
+    return false;
 }
 
-/* TODO
+/*
    Free file's blocks
    Free file's inode
    Free file
 */
 void dir_remove_file(file_struct file) {
+
+    int i;
+    inode in;
+
+    read_inode(file.inode_number, &in);
+
+    for(i=0;i<in.no_blocks;++i){
+	free_block(in.blocks[i]);
+    }
+
+    in.free=true;
+    write_inode(file.inode_number, &in);
+
+    for(i=0;i<MAX_FILES_PER_DIRECTORY;++i){
+	if(root_dir.u_file[i].inode_number == file.inode_number){
+	    root_dir.u_file[i].free = true;
+	}
+    }
 }
 
-/* TODO */
 void dir_rename_file(const char * old, const char * new) {
+
+    int i;
+    
+    for(i=0; i<MAX_FILES_PER_DIRECTORY; ++i){
+	if(strcmp(root_dir.u_file[i].file_name, old) == 0){
+	    strcpy(new, root_dir.u_file[i].file_name);
+	    //warning: new is a const and strcpy takes char *
+	}
+    }
 }
