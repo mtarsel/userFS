@@ -185,7 +185,7 @@ int u_fsck() {
 	
 	/* Ensure that any used blocks in the bitmap are used by some file */
 
-	for (i=3+NUM_INODE_BLOCKS+MAX_FILES_PER_DIRECTORY; i< BIT_MAP_SIZE; i++){
+	for (i=NUM_INODE_BLOCKS+MAX_FILES_PER_DIRECTORY; i< BIT_MAP_SIZE; i++){
 	   	if(bit_map[i] == 1){ //If a block is allocated make sure that it is pointed to by some file 
 			for (k=0; k< MAX_FILES_PER_DIRECTORY ; k++) {	
 				if(!root_dir.u_file[k].free){ // find the files that are NOT free 
