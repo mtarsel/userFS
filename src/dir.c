@@ -20,15 +20,27 @@ void write_dir() {
 	write_block(DIRECTORY_BLOCK, &root_dir, sizeof(dir_struct));
 }
 
-/* TODO
-	Finds a free file and allocates it
-	sets the free file's inode and name
-*/
 void dir_allocate_file(int inode, const char * name) {
+
+    int i;
+
+    for (i=0; i< MAX_FILES_PER_DIRECTORY;++i){
+	if( root_dir.u_file[i].free ){
+	    root_dir.u_file[i].inode_number = inode;    
+	    root_dir.u_file[i].free = false;
+	    strcpy(root_dir.u_file[i].file_name, name);
+	    break;
+	}//TODO: add to root_dir the number of files
+    }
 }
 
-//TODO
 bool is_dir_full() {
+    
+    if (root_dir.no_files == MAX_FILES_PER_DIRECTORY){
+	return true;
+    }else{
+	return false;
+    }
 }
 
 /* TODO
