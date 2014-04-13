@@ -72,7 +72,20 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
 	/* === TODO Loop through all of the files in the root directory == */
-	return 0;
+
+
+	int i,j;
+
+	for(i=0;i<MAX_FILES_PER_DIRECTORY;++i){
+	    if(root_dir.u_file[i].free == 0){
+		char path[MAX_FILE_NAME_SIZE];
+		for(j=0;j<MAX_FILES_PER_DIRECTORY;++j){
+		    path[j] = root_dir.u_file[i].file_name[j+1];
+		}
+		filler(buf, path, NULL, offset);
+	    }
+	}
+    return 0;
 }
 
 /* Create a empty file named path 
