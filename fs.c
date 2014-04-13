@@ -183,27 +183,59 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 	write relevent blocks
 */
 static int fs_write(const char * path, const char * buf, size_t buff_size, off_t offset, struct fuse_file_info * fi) {
-	inode inode;
-	int i;
-	DISK_LBA current_block;	
+    inode inode;
+    int i;
+    DISK_LBA current_block;	
 	
+
+    file_struct file;
+    assert(find_file(path, &file));
 	
-	file_struct file;
-	assert(find_file(path, &file));
+    read_inode(file.inode_number, &inode);
+
+    int new_size = inode.file_size_bytes + buff_size;
+    int new_blockno = floor(new_size/BLOCK_SIZE_BYTES) + 1;
 	
-	read_inode(file.inode_number, &inode);
+    if (new_blockno - inode.no_blocks > u_quota()) {
+	return -ENOSPC;
+    }
 	
-	int new_size = inode.file_size_bytes + buff_size;
-	int new_blockno = floor(new_size/BLOCK_SIZE_BYTES) + 1;
-	
-	if (new_blockno - inode.no_blocks > u_quota()) {
-		return -ENOSPC;
+    if (!valid_file_size(new_blockno)) {
+	return -EFBIG;
+    }
+
+    assert(inode.no_blocks != MAX_BLOCKS_PER_FILE);
+
+    int block_max = inode.no_blocks * BLOCK_SIZE_BYTES;
+    int blockindex = 0;
+
+    int block_offset = offset % BLOCK_SIZE_BYTES;
+
+    if (offset < block_max-1){
+	blockindex = (offset - block_offset) / BLOCK_SIZE_BYTES;
+    }else{
+	inode.no_blocks++;
+	blockindex = inode.no_blocks - 1;
+	if(find_free_block() != -1){
+	   inode.blocks[blockindex] = find_free_block();
+	}else{
+	    printf("\nERROR: find_free_blocks returned -1. Must not be free blocks\n");
 	}
-	
-	if (!valid_file_size(new_blockno)) {
-		return -EFBIG;
-	}
-	return buff_size;
+    }
+
+    int freeblock = inode.blocks[blockindex];
+    int bytes_to_write = min(BLOCK_SIZE_BYTES - block_offset, buff_size);
+
+    write_block_offset(freeblock, buf, bytes_to_write, block_offset);
+    
+    inode.file_size_bytes = max(offset + bytes_to_write, inode.file_size_bytes);
+
+    write_inode(file.inode_number, &inode);
+    
+    allocate_block(freeblock);
+    write_bitmap();
+
+    return buff_size;
 }
 
 /* Trims file to offset length
