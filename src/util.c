@@ -206,13 +206,9 @@ int u_fsck() {
 	}
 	
 	/*
-	  Write code for u_fsck.
-	  return 1 for success, 0 for failure
-
-	  any inodes maked taken not pointed to by the directory?
-	  
-	  are there any things marked taken in bit map not
-	  pointed to by a file?
+	 - return 1 for success, 0 for failure
+	 - any inodes maked taken not pointed to by the directory?
+	 - are there any things marked taken in bit map not pointed to by a file?
 	*/
 
 
