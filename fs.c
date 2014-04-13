@@ -140,6 +140,15 @@ static int fs_open(const char *path, struct fuse_file_info *fi)
    reads contents of file into buf starting at offset  (recommended: implement offset after you have the rest working)
    returns the number of bytes read
 */
+
+int min(int a, int b){
+    return a < b ? a:b;
+}
+
+int max(int a, int b){
+    return a > b ? a:b;
+}
+
 static int fs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     size_t len;
@@ -159,8 +168,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 
     int block_offset = offset % BLOCK_SIZE_BYTES;
     int blockindex = (offset - block_offset) / BLOCK_SIZE_BYTES;
-//TODO: undefined reference to min
-//    int bytes_for_read = min(BLOCK_SIZE_BYTES - block_offset, inode.file_size_bytes);
+    int bytes_for_read = min(BLOCK_SIZE_BYTES - block_offset, inode.file_size_bytes);
 
 //TODO: undefined reference to read_block_offset
   //  read_block_offset(inode.blocks[blockindex], buf, bytes_for_read, block_offset);
