@@ -97,16 +97,29 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
 */
 static int fs_create(const char *path, mode_t mode, struct fuse_file_info * fi) {
 	
-	if(strlen(path) > MAX_FILE_NAME_SIZE) {
-		return -ENAMETOOLONG;
-	}
+    if(strlen(path) > MAX_FILE_NAME_SIZE) {
+	return -ENAMETOOLONG;
+    }
 	
-	if(is_dir_full()) {
-		return -1;
-	}
+    if(is_dir_full()) {
+	return -1;
+    }
+
+    inode in;	
+    
+    if(free_inode() < 0){
+	printf("\nThere is not enough inodes\n");
+	return -1;
+    }
 	
-	
-	return 0;
+    read_inode(free_inode(), &in);
+    allocate_inode(&in,0,0);
+
+    write_inode(free_inode(), &in);
+    dir_allocate_file(free_inode(), path);
+    write_dir();
+
+    return 0;
 }
 
 /* Checks that a file can be opened */
