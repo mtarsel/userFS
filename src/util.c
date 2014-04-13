@@ -21,7 +21,7 @@ int u_format(int diskSizeBytes, char* file_name)
 {
 	int i;
 	int minimumBlocks;
-	inode curr_inode;
+	inode in;
 
 	/* create the virtual disk */
 	if ((virtual_disk = open(file_name, O_CREAT|O_RDWR, S_IRUSR|S_IWUSR)) < 0)
@@ -92,9 +92,9 @@ int u_format(int diskSizeBytes, char* file_name)
 		MAX_BLOCKS_PER_FILE, 
 		MAX_BLOCKS_PER_FILE* BLOCK_SIZE_BYTES);
 
-	curr_inode.free = 1;
+	in.free = 1;
 	for (i=0; i< MAX_INODES; i++){
-		write_inode(i, &curr_inode);
+		write_inode(i, &in);
 	}
 
 	/***********************  SUPERBLOCK ***********************/
@@ -120,9 +120,104 @@ int u_format(int diskSizeBytes, char* file_name)
 }
 
 
-//TODO This is where you recover your filesystem from an unclean shutdown
 int u_fsck() {
-	return 0;
+	
+    int file_count = 0;
+    int free_block_count = 0;
+    bool inode_flag = 0;
+    bool bitmap_flag = 0;
+
+    inode in; 
+
+    int i,j,k;
+
+    //count the number of user files and check if equal to dir.no_files
+    for(i=0;i<MAX_FILES_PER_DIRECTORY; ++i){
+	if(!root_dir.u_file[i].free){ //find files that are NOT free
+	    ++file_count;
+	}
+    }
+
+    if(file_count != root_dir.no_files){
+	printf("\n ***WARNING*** \n The number of files counter is not equal to number of files in this directory\n");
+	return 0;   
+    }
+
+
+       /* loop through all the inodes to check two things;
+        *
+        *  1. Check that if an inode is marked not free, that it belongs to some
+        *  file
+        *  2. Ensure that the number of free blocks is equal to the superblock
+        *  count.
+        *
+        */
+
+	for(j=0; j< MAX_INODES; j++){
+		read_inode(j, &in);
+		if(in.free){ /* if the inode is used, it must belong ot some file */
+			for (i=0; i< MAX_FILES_PER_DIRECTORY ; i++){
+				/* If data integrity is maintained, there must be SOME file in the directory that has this inode number */
+				if(root_dir.u_file[i].inode_number == j){
+					inode_flag = 1;		  
+				}
+        		}
+
+			if(!inode_flag){
+				printf("warning, used inode found that does not correspond to any existing file, freeing inode\n");
+				in.free = 1;
+				return 0;
+			}
+		}
+
+		/* loop through all of the blocks belong to this inode */
+		for(k = 0; k<MAX_BLOCKS_PER_FILE; k++){
+			if(bit_map[in.blocks[k]] == 1){
+				free_block_count++;
+			}
+		}
+	}
+
+	if(sb.num_free_blocks != free_block_count){
+		printf("warning, the number of free blocks found in all of the inodes is not equivalent to the superblock\n");
+		return 0;
+	}
+	
+	/* Ensure that any used blocks in the bitmap are used by some file */
+
+	for (i=3+NUM_INODE_BLOCKS+MAX_FILES_PER_DIRECTORY; i< BIT_MAP_SIZE; i++){
+	   	if(bit_map[i] == 1){ //If a block is allocated make sure that it is pointed to by some file 
+			for (k=0; k< MAX_FILES_PER_DIRECTORY ; k++) {	
+				if(!root_dir.u_file[k].free){ // find the files that are NOT free 
+					read_inode(root_dir.u_file[k].inode_number, &in);
+					for(j=0; j < in.no_blocks; j++) {
+						if(in.blocks[j] == i){ 
+							bitmap_flag = 1;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	if(!bitmap_flag){
+		printf("warning, there is a used block that is not pointed to by any existing file\n");
+		return 0;
+	}
+	
+	/*
+	  Write code for u_fsck.
+	  return 1 for success, 0 for failure
+
+	  any inodes maked taken not pointed to by the directory?
+	  
+	  are there any things marked taken in bit map not
+	  pointed to by a file?
+	*/
+
+
+	printf("File System integrity maintained!\n");
+	return 1;
 }
 
 /*
