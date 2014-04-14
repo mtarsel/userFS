@@ -318,7 +318,6 @@ static int fs_rename(const char * oldpath, const char * newpath) {
 	
 	if (find_file(oldpath, &file)) {
 		dir_rename_file(oldpath, newpath);
-		/* TODO write blocks */
 		return 0;
 	}
 	return -ENOENT;
