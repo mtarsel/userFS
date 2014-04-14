@@ -10,4 +10,6 @@ void write_block(DISK_LBA, const void *, int);
 void write_block_offset(DISK_LBA block, const void * data, int size, int offset);
 void read_block(DISK_LBA, void *, int);
 
+void read_block_offset(DISK_LBA block, void * data, int size, int offset);
+
 #endif
