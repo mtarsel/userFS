@@ -257,15 +257,28 @@ static int fs_write(const char * path, const char * buf, size_t buff_size, off_t
    update inode
 */
 static int fs_truncate(const char * path, off_t offset) {
-	inode inode;
-	int i;
-	int fh;
-	int startblock;
-	DISK_LBA current_block;
+    inode inode;
+    int i;
+    int fh;
+    int startblock;
+    DISK_LBA current_block;
 	
-	file_struct file;
-	assert(find_file(path, &file));
-	return 0;
+    file_struct file;
+    assert(find_file(path, &file));
+   
+    read_inode(file.inode_number, &inode);
+    int blocknum = (inode.file_size_bytes / BLOCK_SIZE_BYTES)+1;
+    int endblock = inode.no_blocks;
+    inode.no_blocks = blocknum;
+
+    for(i=blocknum; i<endblock; ++i){
+	free_block(inode.blocks[i-1]);
+    }
+     
+    write_inode(file.inode_number, &inode);
+    write_bitmap();
+
+    return 0;
 }
 
 /* Remove file 
