@@ -70,28 +70,27 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 */
 static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
-	(void) offset;
-	(void) fi;
+    (void) offset;
+    (void) fi;
 
-	if (strcmp(path, "/") != 0)
-		return -ENOENT;
+    if (strcmp(path, "/") != 0)
+	return -ENOENT;
 
-	filler(buf, ".", NULL, 0);
-	filler(buf, "..", NULL, 0);
-	/* === TODO Loop through all of the files in the root directory == */
+    filler(buf, ".", NULL, 0);
+    filler(buf, "..", NULL, 0);
+/* === Loop through all of the files in the root directory == */
 
+    int i,j;
 
-	int i,j;
-
-	for(i=0;i<MAX_FILES_PER_DIRECTORY;++i){
-	    if(root_dir.u_file[i].free == 0){
-		char path[MAX_FILE_NAME_SIZE];
-		for(j=0;j<MAX_FILES_PER_DIRECTORY;++j){
-		    path[j] = root_dir.u_file[i].file_name[j+1];
-		}
-		filler(buf, path, NULL, offset);
+    for(i=0;i<MAX_FILES_PER_DIRECTORY;++i){
+        if(root_dir.u_file[i].free == 0){
+	    char path[MAX_FILE_NAME_SIZE];
+	    for(j=0;j<MAX_FILES_PER_DIRECTORY;++j){
+		path[j] = root_dir.u_file[i].file_name[j+1];
 	    }
+	filler(buf, path, NULL, offset);
 	}
+    }
     return 0;
 }
 
@@ -177,9 +176,8 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
     int blockindex = (offset - block_offset) / BLOCK_SIZE_BYTES;
     int bytes_for_read = min(BLOCK_SIZE_BYTES - block_offset, inode.file_size_bytes);
 
-//TODO: undefined reference to read_block_offset
-  //  read_block_offset(inode.blocks[blockindex], buf, bytes_for_read, block_offset);
-    
+    read_block_offset(inode.blocks[blockindex], buf, bytes_for_read, block_offset);
+
     read_bytes += inode.file_size_bytes;	
 
     return read_bytes;
